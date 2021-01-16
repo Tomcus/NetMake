@@ -1,0 +1,6 @@
+[submodule "external_libs/json"]
+	path = external_libs/json
+	url = git@github.com:nlohmann/json.git
+[submodule "external_libs/fmt"]
+	path = external_libs/fmt
+	url = git@github.com:fmtlib/fmt.git
