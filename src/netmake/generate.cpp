@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <filesystem>
 
 using namespace netmake;
 
@@ -16,6 +17,16 @@ std::string load_file(const std::string& path) {
     }
     oss << ifs.rdbuf();
     return oss.str();
+}
+
+json load_json(const std::string& path) {
+    json res;
+    std::ifstream ifs(path);
+    if (!ifs.good()) {
+        throw std::runtime_error(fmt::format("Can't open/find file {}", path));
+    }
+    ifs >> res;
+    return res;
 }
 
 std::string get_meta_tag(const std::string& meta_tag_name, const json& meta_data) {
@@ -92,16 +103,17 @@ std::string generate_nav(const std::string& site_name, const json& sites) {
         if (site.key() != "index") {
             std::string edited_link = site.key();
             if (site.key().ends_with("*")) {
-                edited_link = edited_link.substr(0, edited_link.size() - 3);
+                edited_link = edited_link.substr(0, edited_link.size() - 2);
             }
+            std::string site_name = site.value()["title"];
             if (site.key() == site_name) {
                 nav_items += fmt::format("<span class=\"nav-item nav-current\"><a href=\"{}\" >{}</a>/<span>",
                                          edited_link,
-                                         site.value()["title"]);
+                                         site_name);
             } else {
                 nav_items += fmt::format("<span class=\"nav-item\"><a href=\"{}\" >{}</a>/<span>",
                                          edited_link,
-                                         site.value()["title"]);
+                                         site_name);
             }
         }
     }
@@ -123,6 +135,35 @@ void netmake::generate_simple_site(const std::string& site_name, const json& sit
                generate_body(site_name, sites));
 }
 
+void generate_main_site(const std::string& site_name, const json& sites) {
+    std::string file_name = site_name.substr(0, site_name.size() - 2);
+    auto file = fmt::output_file(settings::dest_dir + "/" + file_name + ".html");
+
+    std::string site_template = load_file(fmt::format("{}/templates/{}.html", settings::source_dir, file_name));
+
+    auto list = sites[site_name]["items"];
+    if (list.is_string()) {
+        list = load_json(fmt::format("{}/{}.json", settings::source_dir, list));
+    }
+
+    std::string generated_list = "";
+    if (list.size() > 0) {
+        std::string item_template_name = sites[site_name]["list_item_template"];
+        std::string item_template = load_file(fmt::format("{}/templates/{}.html", settings::source_dir, item_template_name));
+        for (auto item: list) {
+            std::string url = fmt::format("{}/{}.html", file_name, item["name"]);
+            generated_list += fmt::format(item_template, fmt::arg("item_title", item["title"]),
+                                                         fmt::arg("item_description", item["description"]),
+                                                         fmt::arg("item_url", url));
+        }
+    }
+
+    file.print("<head>\n{}\n</head>\n<body>\n{}\n{}\n</body>\n",
+               generate_header(sites[site_name]),
+               generate_nav(site_name, sites),
+               fmt::format(site_template, fmt::arg("generated_list", generated_list)));
+}
+
 void netmake::generate_complex_site(const std::string& site_name, const json& sites) {
-    // TODO: Add complex site generation
+    generate_main_site(site_name, sites);
 }
