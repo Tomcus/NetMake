@@ -9,18 +9,18 @@
 
 using namespace netmake;
 
-// void generate(const std::string& project_def_path) {
-//     json projects;
-//     std::ifstream ifs(project_def_path);
-//     ifs >> projects;
-//     for (auto& item: projects.items()) {
-//         if (item.key().ends_with('*')) {
-//             fmt::print("TODO: Complex generation");
-//         } else {
-//             generate_simple_site(item.key(), item.value());
-//         }
-//     }
-// }
+void generate() {
+    json sites;
+    std::ifstream ifs(settings::source_dir + "/sites.json");
+    ifs >> sites;
+    for (auto& item: sites.items()) {
+        if (item.key().ends_with('*')) {
+            generate_complex_site(item.key(), item.value());
+        } else {
+            generate_simple_site(item.key(), item.value());
+        }
+    }
+}
 
 inline std::vector<std::string> parse_args(int argc, const char* args[]) {
     std::vector<std::string> res(argc);
@@ -31,8 +31,13 @@ inline std::vector<std::string> parse_args(int argc, const char* args[]) {
 }
 
 int main(int argc, const char* args[]) {
-    std::vector<std::string> vargs = parse_args(argc, args);
-    settings::init(vargs);
-    fmt::print("src: {}\ndest: {}\n", settings::source_dir, settings::dest_dir);
+    try {
+        std::vector<std::string> vargs = parse_args(argc, args);
+        settings::init(vargs);
+        generate();
+    } catch (std::exception& e) {
+        fmt::print(stderr, "Error occured during generation.\nError message: {}\n", e.what());
+        return 1;
+    }
     return 0;
 }

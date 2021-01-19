@@ -1,5 +1,6 @@
 add_executable(netmake main.cpp
-               settings.hpp settings.cpp)
+               settings.hpp settings.cpp
+               generate.hpp generate.cpp)
 
 set_property(TARGET netmake PROPERTY CXX_STANDARD 20)
 
