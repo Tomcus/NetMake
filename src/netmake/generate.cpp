@@ -73,7 +73,7 @@ std::string generate_extra_styles(const json& site_data) {
     return res;
 }
 
-std::string generate_header(const json& site_data) {
+std::string generate_header(const json& site_data, const std::string& extra_title = "") {
     static json meta_data = {};
     static std::string header_template = load_file(settings::source_dir + "/templates/header.html");
     if (meta_data == json{}) {
@@ -82,6 +82,9 @@ std::string generate_header(const json& site_data) {
     }
 
     std::string complete_title = fmt::format("{} - {}", site_data["title"], meta_data["main_title"]);
+    if (extra_title != "") {
+        complete_title = fmt::format("{} - {}", extra_title, complete_title);
+    }
 
     std::string meta_tags = "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n";
 
@@ -135,17 +138,19 @@ void netmake::generate_simple_site(const std::string& site_name, const json& sit
                generate_body(site_name, sites));
 }
 
-void generate_main_site(const std::string& site_name, const json& sites) {
+void netmake::generate_complex_site(const std::string& site_name, const json& sites) {
     std::string file_name = site_name.substr(0, site_name.size() - 2);
-    auto file = fmt::output_file(settings::dest_dir + "/" + file_name + ".html");
+    auto main_site = fmt::output_file(settings::dest_dir + "/" + file_name + ".html");
 
-    std::string site_template = load_file(fmt::format("{}/templates/{}.html", settings::source_dir, file_name));
+    std::string main_site_template = load_file(fmt::format("{}/templates/{}.html", settings::source_dir, file_name));
+    std::string nav_bar = generate_nav(site_name, sites);
 
     auto list = sites[site_name]["items"];
     if (list.is_string()) {
         list = load_json(fmt::format("{}/{}.json", settings::source_dir, list));
     }
 
+    std::filesystem::create_directories(fmt::format("{}/{}", settings::dest_dir, file_name));
     std::string generated_list = "";
     if (list.size() > 0) {
         std::string item_template_name = sites[site_name]["list_item_template"];
@@ -155,15 +160,18 @@ void generate_main_site(const std::string& site_name, const json& sites) {
             generated_list += fmt::format(item_template, fmt::arg("item_title", item["title"]),
                                                          fmt::arg("item_description", item["description"]),
                                                          fmt::arg("item_url", url));
+            
+            auto site = fmt::output_file(fmt::format("{}/{}", settings::dest_dir, url));
+            std::string site_template = load_file(fmt::format("{}/templates/{}.html", settings::source_dir, item["name"]));
+            site.print("<head>\n{}\n</head>\n<body>\n{}\n{}\n</body>\n",
+               generate_header(sites[site_name], item["title"]),
+               nav_bar,
+               fmt::format(site_template, fmt::arg("generated_list", generated_list)));
         }
     }
 
-    file.print("<head>\n{}\n</head>\n<body>\n{}\n{}\n</body>\n",
+    main_site.print("<head>\n{}\n</head>\n<body>\n{}\n{}\n</body>\n",
                generate_header(sites[site_name]),
-               generate_nav(site_name, sites),
-               fmt::format(site_template, fmt::arg("generated_list", generated_list)));
-}
-
-void netmake::generate_complex_site(const std::string& site_name, const json& sites) {
-    generate_main_site(site_name, sites);
+               nav_bar,
+               fmt::format(main_site_template, fmt::arg("generated_list", generated_list)));
 }
