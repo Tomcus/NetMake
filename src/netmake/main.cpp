@@ -15,9 +15,9 @@ void generate() {
     ifs >> sites;
     for (auto& item: sites.items()) {
         if (item.key().ends_with('*')) {
-            generate_complex_site(item.key(), item.value());
+            generate_complex_site(item.key(), sites);
         } else {
-            generate_simple_site(item.key(), item.value());
+            generate_simple_site(item.key(), sites);
         }
     }
 }
