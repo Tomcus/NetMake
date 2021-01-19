@@ -6,6 +6,7 @@
 
 #include <string>
 #include <fstream>
+#include <filesystem>
 
 using namespace netmake;
 
@@ -30,11 +31,17 @@ inline std::vector<std::string> parse_args(int argc, const char* args[]) {
     return res;
 }
 
+void copy_extra_files() {
+    std::filesystem::copy(fmt::format("{}/to_copy", settings::source_dir),
+                          settings::dest_dir, std::filesystem::copy_options::recursive);
+}
+
 int main(int argc, const char* args[]) {
     try {
         std::vector<std::string> vargs = parse_args(argc, args);
         settings::init(vargs);
         generate();
+        copy_extra_files();
     } catch (std::exception& e) {
         fmt::print(stderr, "Error occured during generation.\nError message: {}\n", e.what());
         return 1;
