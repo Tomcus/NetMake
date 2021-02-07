@@ -42,6 +42,12 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+    
+    - name: Upload build executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: NetMake Release
+        path: ${{github.workspace}}/build/bin/netmake
 
     # - name: Test
     #   working-directory: ${{github.workspace}}/build
