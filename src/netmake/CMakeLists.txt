@@ -1,9 +1,8 @@
-add_executable(netmake main.cpp
-               settings.hpp settings.cpp
-               generate.hpp generate.cpp)
+add_subdirectory(settings)
+add_subdirectory(generation)
 
-set_property(TARGET netmake PROPERTY CXX_STANDARD 20)
+add_executable(netmake main.cpp)
 
 target_link_libraries(netmake
-    fmt
-    nlohmann_json)
+    generation
+    settings)
