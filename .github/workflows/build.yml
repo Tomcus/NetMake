@@ -36,7 +36,7 @@ jobs:
         path: ${{github.workspace}}/build
         key: ${{matrix.build_type}}-${{github.ref}}
         restore-keys: |
-          ${{matrix.build_type}}-refs/head/master
+          ${{matrix.build_type}}-refs/heads/master
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
