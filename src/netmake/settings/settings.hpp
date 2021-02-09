@@ -6,8 +6,7 @@
 #include <filesystem>
 
 namespace netmake {
-    class settings {
-    public:
+    struct settings {
         static void init(const std::vector<std::string>& args);
         static std::filesystem::path source_dir;
         static std::filesystem::path dest_dir;
