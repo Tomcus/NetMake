@@ -3,13 +3,14 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace netmake {
     class settings {
     public:
         static void init(const std::vector<std::string>& args);
-        static std::string source_dir;
-        static std::string dest_dir;
+        static std::filesystem::path source_dir;
+        static std::filesystem::path dest_dir;
     };
 }
 

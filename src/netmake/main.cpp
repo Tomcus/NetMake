@@ -1,29 +1,17 @@
 #include <fmt/core.h>
 
-#include "json.hpp"
-#include "generate.hpp"
-#include "settings.hpp"
+#include "generation/generate.hpp"
+#include "settings/settings.hpp"
 
 #include <string>
-#include <fstream>
 #include <filesystem>
+#include <chrono>
+#include <fmt/core.h>
 
 using namespace netmake;
+using namespace std::chrono;
 
-void generate() {
-    json sites;
-    std::ifstream ifs(settings::source_dir + "/sites.json");
-    ifs >> sites;
-    for (auto& item: sites.items()) {
-        if (item.key().ends_with('*')) {
-            generate_complex_site(item.key(), sites);
-        } else {
-            generate_simple_site(item.key(), sites);
-        }
-    }
-}
-
-inline std::vector<std::string> parse_args(int argc, const char* args[]) {
+inline std::vector<std::string> convert_args(int argc, const char* args[]) {
     std::vector<std::string> res(argc);
     for (int i = 0; i < argc; ++i) {
         res.emplace_back(args[i]);
@@ -38,10 +26,14 @@ void copy_extra_files() {
 
 int main(int argc, const char* args[]) {
     try {
-        std::vector<std::string> vargs = parse_args(argc, args);
+        std::vector<std::string> vargs = convert_args(argc, args);
         settings::init(vargs);
+        auto start = std::chrono::high_resolution_clock::now();
         generate();
-        copy_extra_files();
+        auto end = std::chrono::high_resolution_clock::now();
+        duration<double> diff = end - start;
+        fmt::print("Generation finifhed in: {}ms\n", diff.count() * 1000);
+        copy_extra_files()
     } catch (std::exception& e) {
         fmt::print(stderr, "Error occured during generation.\nError message: {}\n", e.what());
         return 1;

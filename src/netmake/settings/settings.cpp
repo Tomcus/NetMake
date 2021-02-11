@@ -2,12 +2,10 @@
 
 using namespace netmake;
 
-std::string settings::source_dir{""};
-std::string settings::dest_dir{""};
+std::filesystem::path settings::source_dir{"./src"};
+std::filesystem::path settings::dest_dir{"./generated"};
 
 void settings::init(const std::vector<std::string>& args) {
-    settings::source_dir = "./src";
-    settings::dest_dir = "./generated";
     for (size_t i = 0; i < args.size(); i++) {
         auto& arg = args[i];
         if (arg == "-s" || arg == "--src") {
