@@ -20,7 +20,7 @@ inline std::vector<std::string> convert_args(int argc, const char* args[]) {
 }
 
 void copy_extra_files() {
-    std::filesystem::copy(fmt::format("{}/to_copy", settings::source_dir),
+    std::filesystem::copy(fmt::format("{}/to_copy", settings::source_dir.c_str()),
                           settings::dest_dir, std::filesystem::copy_options::recursive);
 }
 
