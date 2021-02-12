@@ -1,8 +1,7 @@
 add_library(generation
     generate.hpp generate.cpp
     json.hpp
-    simple_page_generator.hpp simple_page_generator.cpp
-    derived_page_generator.hpp derived_page_generator.cpp)
+    simple_page_generator.hpp simple_page_generator.cpp)
 
 target_include_directories(generation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
