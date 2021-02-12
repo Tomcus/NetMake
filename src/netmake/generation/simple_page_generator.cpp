@@ -7,6 +7,8 @@
 #include <fmt/core.h>
 
 namespace netmake {
+    std::unordered_map<std::string, std::string> simple_page_generator::template_store{};
+
     simple_page_generator::simple_page_generator(const std::string& site_name, const json& site_data):name{site_name}, data{site_data} { }
 
     void simple_page_generator::generate() const {
@@ -18,8 +20,9 @@ namespace netmake {
         generate_footer(file);
     }
 
-    void simple_page_generator::offset(const std::filesystem::path& new_offset) {
-        extra_path = new_offset;
+    void simple_page_generator::offset(const std::string_view& new_offset, const std::string_view& new_title) {
+        extra_offset = new_offset;
+        override_title = new_title;
     }
 
     std::string simple_page_generator::generate_extra_styles() const {
@@ -66,7 +69,7 @@ namespace netmake {
     }
     std::string simple_page_generator::generate_pages_list(const std::string& template_name) const {
         std::string listings = "";
-        std::string listing_template = load_file(get_template_path(fmt::format("{}.html", template_name)));
+        std::string listing_template = get_template(fmt::format("{}.html", template_name));
         for (auto& site: sites["pages"].items()) {
             if (site.key() != "index") {
                 std::string url = site.key();
@@ -91,15 +94,16 @@ namespace netmake {
 
     void simple_page_generator::generate_header(const fmt::ostream& file) const {
         static json meta_data = {};
-        static std::string header_template = load_file(get_template_path("header.html"));
+        std::string header_template = get_template("header");
         if (meta_data == json{}) {
             meta_data = load_json(get_source_path("metadata.json"));
         }
 
-        std::string complete_title = fmt::format("{} - {}", data["title"], meta_data["main_title"]);
-        if (extra_title != "") {
-            complete_title = fmt::format("{} - {}", extra_title, complete_title);
+        std::string top_title = meta_data["main_title"];
+        if (override_title != "") {
+            top_title = override_title;
         }
+        std::string complete_title = fmt::format("{} - {}", data["title"], top_title);
 
         std::string meta_tags = "";
         meta_tags += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n";
@@ -115,7 +119,7 @@ namespace netmake {
                                     fmt::arg("extra_styles", generate_extra_styles()));
     }
     std::string simple_page_generator::generate_nav() const {
-        static std::string nav_template = load_file(get_template_path("nav.html"));
+        std::string nav_template = get_template("nav");
         fmt::dynamic_format_arg_store<fmt::format_context> store{};
         for (auto listing:data["listings_templates"]) {
             store.push_back(fmt::arg(fmt::format("generated_{}s", listing).c_str(), generate_pages_list(listing)));
@@ -124,12 +128,12 @@ namespace netmake {
     }
     void simple_page_generator::generate_body(const fmt::ostream& file) const {
         // const json site_data = sites["pages"][site_name];
-        std::string content = load_file(get_template_path(fmt::format("{}.html", name)));
-        file.print("{}\n{}", generate_nav(), content);
+        std::string content = get_template(fmt::format("{}.html", name));
+        fmt::print(file, "{}\n{}", generate_nav(), content);
     }
     void simple_page_generator::generate_footer(const fmt::ostream& file) const {
         static std::string footer = load_file(get_template_path("format.html"));
-        file.print(footer);
+        fmt::print(file, footer);
     }
     
     json simple_page_generator::load_json(const std::filesystem::path& path_to_json) {
@@ -155,12 +159,46 @@ namespace netmake {
     }
 
     std::filesystem::path simple_page_generator::get_destination_path(const std::filesystem::path& file) const {
-        return settings::dest_dir / extra_path / file;
+        std::string offset_as_path = replace_in_string<'.', std::filesystem::path::preferred_separator>(extra_offset);
+        return settings::dest_dir / std::filesystem::path{offset_as_path} / file;
     }
-    std::filesystem::path simple_page_generator::get_source_path(const std::filesystem::path& file) const {
+    std::filesystem::path simple_page_generator::get_source_path(const std::filesystem::path& file) {
         return settings::source_dir / file;
     }
-    std::filesystem::path simple_page_generator::get_template_path(const std::filesystem::path& file) const {
+    std::filesystem::path simple_page_generator::get_template_path(const std::filesystem::path& file) {
         return settings::source_dir / std::filesystem::path{"templates"} / file;
+    }
+
+    void simple_page_generator::set_parent_header(const std::string_view& header) {
+        parrent_header = header;
+    }
+
+    std::string simple_page_generator::get_template(const std::string& template_name, const std::string& fallback) {
+        try {
+            return get_template(template_name);
+        } catch (const std::exception&) {
+            // TODO: print exception
+            return get_template(fallback);
+        }
+    }
+
+    std::string simple_page_generator::get_template(const std::string& template_name) {
+        if (!template_store.contains(template_name)) {
+            template_store.emplace(template_name, load_file(get_template_path(fmt::format("{}.html", template_name))));
+        }
+        return template_store[template_name];
+    }
+
+    template <char from, char to>
+    std::string replace_in_string(const std::string_view& str) {
+        std::string res;
+        res.reserve(str.size() + 1);
+        for (size_t i = 0; i < str.size(); ++i) {
+            if (res[i] != from)
+                res[i] = str[i];
+            else
+                res[i] = to;
+        }
+        return res;
     }
 }

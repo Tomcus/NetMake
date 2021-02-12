@@ -2,8 +2,9 @@
 #define NETMAKE_SIMPLE_PAGE_GENERATOR_HPP
 
 #include <string>
+#include <string_view>
 #include <filesystem>
-#include <functional>
+#include <unordered_map>
 
 #include <fmt/os.h>
 
@@ -15,7 +16,8 @@ namespace netmake {
         simple_page_generator(const std::string& site_name, const json& site_data);
 
         virtual void generate() const;
-        void offset(const std::filesystem::path& new_offset);
+        void offset(const std::string_view& new_offset, const std::string_view& new_title);
+        void set_parent_header(const std::string_view& header);
 
         static json sites;
     protected:
@@ -33,13 +35,21 @@ namespace netmake {
         static std::string load_file(const std::filesystem::path& path_to_file);
 
         std::filesystem::path get_destination_path(const std::filesystem::path& file) const;
-        std::filesystem::path get_source_path(const std::filesystem::path& file) const;
-        std::filesystem::path get_template_path(const std::filesystem::path& file) const;
+        static std::filesystem::path get_source_path(const std::filesystem::path& file);
+        static std::filesystem::path get_template_path(const std::filesystem::path& file);
+
+        static std::string get_template(const std::string& template_name);
+        static std::string get_template(const std::string& template_name, const std::string& fallback);
+        static std::unordered_map<std::string, std::string> template_store;
+
+        template <char from, char to>
+        static std::string replace_in_string(const std::string_view& str);
 
         std::string name;
         json data;
-        std::filesystem::path extra_path{};
-        std::string extra_title{};
+        std::string extra_offset{};
+        std::string override_title{};
+        std::string parrent_header{};
     };
 }
 

@@ -10,7 +10,7 @@ namespace netmake {
         static void init(const std::vector<std::string>& args);
         static std::filesystem::path source_dir;
         static std::filesystem::path dest_dir;
-        static bool concat_headers;
+        static bool concat_nav;
     };
 }
 

@@ -4,7 +4,7 @@ using namespace netmake;
 
 std::filesystem::path settings::source_dir{"./src"};
 std::filesystem::path settings::dest_dir{"./generated"};
-bool settings::concat_headers{true};
+bool settings::concat_nav{true};
 
 void settings::init(const std::vector<std::string>& args) {
     for (size_t i = 0; i < args.size(); i++) {
@@ -14,9 +14,9 @@ void settings::init(const std::vector<std::string>& args) {
         } else if (arg == "-d" || arg == "--dest") {
             settings::dest_dir = args[++i];
         } else if (arg == "-c" || arg == "--concat") {
-            settings::concat_headers = true;
-        } else if (arg == "-C" || arg == "--unique_headers") {
-            settings::concat_headers = false;
+            settings::concat_nav = true;
+        } else if (arg == "-C" || arg == "--unique_navigations") {
+            settings::concat_nav = false;
         }
 
     }
