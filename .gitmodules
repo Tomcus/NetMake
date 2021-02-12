@@ -4,3 +4,6 @@
 [submodule "external_libs/fmt"]
 	path = external_libs/fmt
 	url = git@github.com:fmtlib/fmt.git
+[submodule "external_libs/debug20"]
+	path = external_libs/debug20
+	url = git@github.com:Tomcus/debug20.git
