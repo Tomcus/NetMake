@@ -1,5 +1,6 @@
 #include "template_generator.hpp"
 #include "settings/settings.hpp"
+#include "debug20/assert.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -28,18 +29,14 @@ text template_generator_impl::get_template(const std::string_view template_name)
         std::filesystem::path path_to_template = settings::source_dir / std::filesystem::path{"templates"}
             / std::filesystem::path{file_name.data()};
         // Check if file exists and it is a regular file.
-        if (!std::filesystem::is_file(path_to_template)) {
-            throw std::runtime_error(fmt::format("Template not found on path: {}", path_to_file.c_str()));
-        }
+        d20::assert(std::filesystem::is_file(path_to_template), fmt::format("Template not found on path: {}", path_to_file.c_str()));
 
         // Open the template file
         std::ifstream template_file{};
         template_file.open(path_to_template.c_str());
 
         // Check if file was successfully opened
-        if (!template_file.good()) {
-            throw std::runtime_error(fmt::format("Can't open file at: {}", path_to_file.c_str()));
-        }
+        d20::assert(template_file.good(), fmt::format("Can't open file at: {}", path_to_file.c_str()));
 
         // Load file into memory
         char buffer[BUFFER_SIZE];
@@ -66,9 +63,7 @@ template_generator_impl::template_generator_impl(const std::string_view template
 
 void template_generator_impl::generate() {
     // Check if data was already generated
-    if (data != nullptr) {
-        throw std::runtime_error("Data already generated. Please don't generate twice.")
-    }
+    d20::assert(data == nullptr, "Data already generated. Please don't generate twice.");
     text& template = get_template(name);
 
     // Create memory buffer where to store temporary data
@@ -92,7 +87,7 @@ fmt::format_arg_store template_generator_impl::parse_args() const {
         } else if (page_info.value().is_primitive()) {
             args.push_back(fmt::arg(page_info.key()));
         } else if (!page_info.value().is_null()) {
-            throw std::runtime_error(fmt::format("Can't parse argument of type {}", page_info.value().type()));
+            throw generation_error(fmt::format("Can't parse argument of type {}", page_info.value().type()));
         }
     }
     // Return created arguments

@@ -4,8 +4,22 @@
 #include <vector>
 #include <memory>
 #include <atomic>
+#include <string_view>
+
+#include "debug20/exception.hpp"
 
 namespace netmake::generation {
+
+    /// Generation error is thrown during generation
+    struct generation_error: public d20::exception {
+        /// Default error costructor with message and location
+        generation_error(const std::string_view& msg = "", const source_location& loc = source_location::current());
+        /// Retrieve error string
+        const char* what() const noexcept override;
+    protected:
+        /// Error string storage
+        std::string err_msg;
+    };
 
     struct generative_element_impl;
     using generative_element = std::shared_ptr<generative_element_impl>;

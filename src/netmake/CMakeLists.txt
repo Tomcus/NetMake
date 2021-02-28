@@ -5,4 +5,5 @@ add_executable(netmake main.cpp)
 
 target_link_libraries(netmake
     generation
-    settings)
+    settings
+    debug20)
