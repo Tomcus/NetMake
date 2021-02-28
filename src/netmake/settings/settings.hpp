@@ -5,6 +5,8 @@
 #include <vector>
 #include <filesystem>
 
+#include "debug20/log.hpp"
+
 namespace netmake {
     struct settings {
         /// Processes user arguments and reinitiliazes the settings values
@@ -15,6 +17,7 @@ namespace netmake {
         static std::filesystem::path source_dir;
         /// Destination folder, where generated data are stored.
         static std::filesystem::path dest_dir;
+        static d20::logger logger;
 
         /// Get path to source file defined by file_name
         [[nodiscard]] std::filesystem::path path_to_source_file(const std::string_view file_name) const noexcept;
