@@ -5,6 +5,7 @@
 #include <memory>
 #include <atomic>
 #include <string_view>
+#include <execution>
 
 #include "debug20/exception.hpp"
 
@@ -29,11 +30,24 @@ namespace netmake::generation {
         virtual ~generative_element_impl();
 
         /// Checks if can start generating
-        constexpr bool can_generate() noexcept const;
+        bool can_generate() const noexcept {
+            bool result{true};
+            std::for_each(std::execution::par, dependecies.begin(), dependecies.end(), [&](const auto& dep){
+                result &= dep->is_done();
+            });
+            return result;
+        }
         /// Check if generation is done
-        constexpr bool is_done() noexcept const;
+        bool is_done() const noexcept {
+            return done;
+        }
         /// Retrieve generation result
-        constexpr const char* get_result() const;
+        constexpr const char* get_result() const {
+            if (data != nullptr && done) {
+                return data;
+            }
+            throw generation_error("Can't return result until generation is done.");
+        }
 
         /// Virtual generation function must be implemented by children structures
         virtual void generate() = 0;

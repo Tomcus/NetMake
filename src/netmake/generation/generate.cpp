@@ -10,29 +10,29 @@
 using namespace netmake;
 using namespace std::filesystem;
 
-void netmake::generate() {
-    if (!is_directory(settings::source_dir)) {
-        throw std::runtime_error(fmt::format("Can't generate website. Source directory {} doesn't exists", settings::source_dir.c_str()));
-    }
+// void netmake::generate() {
+//     if (!is_directory(settings::source_dir)) {
+//         throw std::runtime_error(fmt::format("Can't generate website. Source directory {} doesn't exists", settings::source_dir.c_str()));
+//     }
 
-    if (!is_directory(settings::dest_dir)) {
-        create_directories(settings::dest_dir);
-    }
+//     if (!is_directory(settings::dest_dir)) {
+//         create_directories(settings::dest_dir);
+//     }
 
-    std::ifstream ifs(settings::source_dir / path{"pages.json"});
-    json site_defs;
-    ifs >> site_defs;
-    simple_page_generator::sites = site_defs;
+//     std::ifstream ifs(settings::source_dir / path{"pages.json"});
+//     json site_defs;
+//     ifs >> site_defs;
+//     simple_page_generator::sites = site_defs;
 
-    for (auto& item: site_defs["pages"].items()) {
-        if (item.key().ends_with('*')) {
-            // generate_complex_site(item.key(), sites);
-        } else {
-            simple_page_generator ssg{item.key(), item.value()};
-            ssg.generate();
-        }
-    }
-}
+//     for (auto& item: site_defs["pages"].items()) {
+//         if (item.key().ends_with('*')) {
+//             // generate_complex_site(item.key(), sites);
+//         } else {
+//             simple_page_generator ssg{item.key(), item.value()};
+//             ssg.generate();
+//         }
+//     }
+// }
 
 // void netmake::generate_complex_site(const std::string& site_name, const json& sites) {
 //     std::string file_name = site_name.substr(0, site_name.size() - 2);

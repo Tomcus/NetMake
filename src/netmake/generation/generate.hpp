@@ -4,8 +4,8 @@
 #include "json.hpp"
 #include <string>
 
-namespace netmake {
-    void generate();
-}
+// namespace netmake {
+//     void generate();
+// }
 
 #endif//NETMAKE_GENERATE_HPP

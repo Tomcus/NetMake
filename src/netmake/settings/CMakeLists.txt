@@ -3,4 +3,4 @@ add_library(settings
 
 target_include_directories(settings PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-target_link_libraries(settings PRIVATE debug20)
+target_link_libraries(settings PUBLIC debug20)

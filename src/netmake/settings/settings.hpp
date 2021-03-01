@@ -12,7 +12,7 @@ namespace netmake {
         /// Processes user arguments and reinitiliazes the settings values
         static void init(const std::vector<std::string>& args) noexcept;
         /// Get local copy of master settings
-        static [[nodiscard]] settings master() noexcept;
+        static settings master() noexcept;
         /// Source file folder location
         static std::filesystem::path source_dir;
         /// Destination folder, where generated data are stored.
