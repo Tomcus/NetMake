@@ -12,6 +12,12 @@
 using namespace netmake;
 using namespace std::filesystem;
 
+/**
+ * @brief Load file from specific path.
+ * 
+ * @param path Path to file that will be loaded
+ * @return std::string File contents
+ */
 std::string load_file(const path& path) {
     std::ifstream ifs(path);
     if (!ifs.good()) {
@@ -25,6 +31,12 @@ std::string load_file(const path& path) {
     return oss.str();
 }
 
+/**
+ * @brief Load file contents and parses it into json
+ * 
+ * @param path Path to the json file
+ * @return json Json data that were stored in the file
+ */
 json load_json(const path& path) {
     json res;
     std::ifstream ifs(path);
@@ -35,6 +47,16 @@ json load_json(const path& path) {
     return res;
 }
 
+
+/**
+ * @brief Main generation function.
+ * Generates whole website based on configuration.
+ * The function checks if source and destination directories are present.
+ * If the source directory doesn't exists, then the function will throw std::runtime_error.
+ * If the destination directory doesn't exists, then it is created.
+ * The the function loads `sites.json` file from source directory, that should contain the configuration needed for website generation.
+ * Either generate_complex_site ot generate_simple_site is used depending on the configuration.
+ */
 void netmake::generate() {
     if (!is_directory(settings::source_dir)) {
         throw std::runtime_error(fmt::format("Can't generate website. Source directory {} doesn't exists", settings::source_dir.c_str()));
@@ -99,9 +121,19 @@ std::string generate_extra_styles(const json& site_data) {
     return res;
 }
 
+/**
+ * @brief Generates html file header from provided configuration.
+ *
+ * The function generates html file header based on provided template, that should be stored in `header.html` file.
+ * Also all metadata are loaded from `metadata.json` file.
+ * 
+ * @param site_data Generation configuration and data
+ * @param extra_title Text that will be appended to predefined title.
+ * @return std::string 
+ */
 std::string generate_header(const json& site_data, const std::string& extra_title = "") {
     static json meta_data = {};
-    static std::string header_template = load_file(get_template_path("header.html"));
+    static const std::string header_template = load_file(get_template_path("header.html"));
     if (meta_data == json{}) {
         std::ifstream md_file(get_source_path("metadata.json"));
         md_file >> meta_data;
@@ -162,6 +194,12 @@ std::string generate_body(const std::string& site_name, const json& sites) {
     return res;
 }
 
+/**
+ * @brief Generates one simple page based on the configuration.
+ * 
+ * @param site_name Name of the site (used for the file name)
+ * @param sites Configuration
+ */
 void netmake::generate_simple_site(const std::string& site_name, const json& sites) {
     auto file = fmt::output_file(get_destination_path(fmt::format("{}.html", site_name)).c_str());
     file.print("<head>\n{}\n</head>\n<body>\n{}\n</body>\n",
