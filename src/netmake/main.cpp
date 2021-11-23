@@ -33,7 +33,7 @@ int main(int argc, const char* args[]) {
         auto end = std::chrono::high_resolution_clock::now();
         duration<double> diff = end - start;
         fmt::print("Generation finifhed in: {}ms\n", diff.count() * 1000);
-        copy_extra_files()
+        copy_extra_files();
     } catch (std::exception& e) {
         fmt::print(stderr, "Error occured during generation.\nError message: {}\n", e.what());
         return 1;
